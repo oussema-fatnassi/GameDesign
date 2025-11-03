@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55c245fc1f9744ecba259508f7cc0716, type: 3}
   m_Name: SMG
   m_EditorClassIdentifier: 
-  weaponName: Assault Rifle
-  damage: 25
-  fireRate: 600
-  range: 100
-  magazineSize: 30
-  reserveAmmo: 120
-  reloadTime: 2
-  spread: 0.5
-  recoilVertical: 0.5
-  recoilHorizontal: 0.3
+  weaponName: SMG
+  damage: 15
+  fireRate: 900
+  range: 50
+  magazineSize: 40
+  reserveAmmo: 200
+  reloadTime: 1.5
+  spread: 1.5
+  recoilVertical: 0.3
+  recoilHorizontal: 0.5

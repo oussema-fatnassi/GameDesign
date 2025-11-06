@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a4e88720fd74072bd79aa7ed33be8b, type: 3}
+  m_Name: BossScout
+  m_EditorClassIdentifier: 
+  enemyName: BossScout
+  description: Elite Scout commander. Faster and tougher.
+  maxHealth: 300
+  moveSpeed: 4.5
+  attackRange: 2.5
+  objectiveAttackRange: 4
+  attackDamage: 20
+  attackCooldown: 1
+  canAttackPlayers: 1
+  canAttackObjective: 1
+  targetPriority: 3
+  playerDetectionRange: 20
+  killPoints: 100

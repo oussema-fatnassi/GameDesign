@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55c245fc1f9744ecba259508f7cc0716, type: 3}
   m_Name: BurstRifle
   m_EditorClassIdentifier: 
-  weaponName: Assault Rifle
-  damage: 25
-  fireRate: 600
-  range: 100
-  magazineSize: 30
-  reserveAmmo: 120
-  reloadTime: 2
-  spread: 0.5
-  recoilVertical: 0.5
+  weaponName: Burst Rifle
+  damage: 28
+  fireRate: 750
+  range: 120
+  magazineSize: 27
+  reserveAmmo: 135
+  reloadTime: 2.2
+  spread: 0.2
+  recoilVertical: 0.6
   recoilHorizontal: 0.3

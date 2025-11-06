@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 55c245fc1f9744ecba259508f7cc0716, type: 3}
-  m_Name: Shotgun
+  m_Name: Pistol
   m_EditorClassIdentifier: 
-  weaponName: Assault Rifle
-  damage: 25
-  fireRate: 600
-  range: 100
-  magazineSize: 30
-  reserveAmmo: 120
-  reloadTime: 2
+  weaponName: Pistol
+  damage: 30
+  fireRate: 300
+  range: 75
+  magazineSize: 15
+  reserveAmmo: 90
+  reloadTime: 1.2
   spread: 0.5
-  recoilVertical: 0.5
-  recoilHorizontal: 0.3
+  recoilVertical: 0.8
+  recoilHorizontal: 0.4

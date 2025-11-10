@@ -155,6 +155,7 @@ GameObject:
   - component: {fileID: 8714014639473444610}
   - component: {fileID: 3394149573045666173}
   - component: {fileID: 3763540251155357753}
+  - component: {fileID: 5657507593706015924}
   - component: {fileID: 7751092784995055732}
   - component: {fileID: 4962587284655863901}
   m_Layer: 0
@@ -284,6 +285,31 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
+--- !u!114 &5657507593706015924
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5241396416684125799}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 411284375
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!114 &7751092784995055732
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -296,6 +322,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6746a852dbd4e4c03a3f3d913c6608f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   playerConfig: {fileID: 11400000, guid: bd3c7c4d03f234ce7bddb86d6911a75c, type: 2}
   playerCamera: {fileID: 792878541855285728}
   cameraHolder: {fileID: 0}
@@ -321,8 +348,9 @@ MonoBehaviour:
   weaponMuzzle: {fileID: 858891561431042725}
   muzzleFlash: {fileID: 0}
   impactEffect: {fileID: 0}
-  bulletTracer: {fileID: 0}
+  bulletTracerPrefab: {fileID: 0}
   tracerDuration: 0.05
+  crosshair: {fileID: 0}
   hitLayers:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -419,7 +447,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5509956159582417037}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!114 &8343215569979846307
 MonoBehaviour:
   m_ObjectHideFlags: 0

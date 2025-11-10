@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -7,7 +8,7 @@ using UnityEngine.InputSystem;
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(Collider))]
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
     [Header("Configuration")]
     [SerializeField] private PlayerConfig playerConfig;
@@ -56,14 +57,17 @@ public class PlayerController : MonoBehaviour
         // Configure rigidbody
         rb.freezeRotation = true; // Prevent physics from rotating the player
         rb.interpolation = RigidbodyInterpolation.Interpolate;
-        
+
         // Lock cursor
+        //TODO : Change this later to be dynamic based on game state, GameManager?
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
     void OnEnable()
     {
+        if (!IsOwner) return;
+
         // Enable input actions
         moveAction = inputActions.Player.Move;
         moveAction.Enable();
@@ -82,6 +86,8 @@ public class PlayerController : MonoBehaviour
 
     void OnDisable()
     {
+        if (!IsOwner) return;
+
         // Disable input actions
         moveAction?.Disable();
         lookAction?.Disable();
@@ -97,6 +103,8 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+        if (!IsOwner) return;
+
         // Initialize rotation values
         horizontalRotation = transform.eulerAngles.y;
         verticalRotation = GetCameraTransform().localEulerAngles.x;
@@ -110,6 +118,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (!IsOwner) return;
+
         // Handle looking (needs to be in Update for smooth camera movement)
         ProcessLookInput();
         ApplyRotation();
@@ -117,6 +127,8 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (!IsOwner) return;
+
         // Handle movement (in FixedUpdate for physics)
         isGrounded = CheckGrounded();
         ProcessMovement();
@@ -127,13 +139,15 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void ProcessLookInput()
     {
+        if (!IsOwner) return;
+
         // Read raw input
         Vector2 rawLookInput = lookAction.ReadValue<Vector2>();
         
         // Apply deadzone threshold
         if (Mathf.Abs(rawLookInput.x) < inputThreshold) rawLookInput.x = 0f;
         if (Mathf.Abs(rawLookInput.y) < inputThreshold) rawLookInput.y = 0f;
-        
+
         // Smooth the input
         smoothedLookInput = Vector2.SmoothDamp(
             smoothedLookInput,
@@ -141,7 +155,7 @@ public class PlayerController : MonoBehaviour
             ref currentLookVelocity,
             lookSmoothTime
         );
-        
+
         // Apply sensitivity and delta time
         float horizontalDelta = smoothedLookInput.x * playerConfig.CurrentHorizontalSensitivity * Time.deltaTime;
         float verticalDelta = smoothedLookInput.y * playerConfig.CurrentVerticalSensitivity * Time.deltaTime;
@@ -159,6 +173,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void ApplyRotation()
     {
+        if (!IsOwner) return;
+
         // Rotate player body horizontally
         Quaternion bodyRotation = Quaternion.Euler(0f, horizontalRotation, 0f);
         rb.MoveRotation(bodyRotation);
@@ -173,6 +189,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void ProcessMovement()
     {
+        if (!IsOwner) return;
+
         // Read movement input
         moveInput = moveAction.ReadValue<Vector2>();
         
@@ -209,6 +227,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void OnJump(InputAction.CallbackContext context)
     {
+        if (!IsOwner) return;
+
         if (isGrounded)
         {
             rb.AddForce(Vector3.up * playerConfig.CurrentJumpForce, ForceMode.Impulse);

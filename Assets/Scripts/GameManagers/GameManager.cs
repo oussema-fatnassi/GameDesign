@@ -50,8 +50,13 @@ public class GameManager : MonoBehaviour
     {
         if (_clientType == EClientType.HOST)
         {
+            // Lock cursor
+            //TODO : Change this later to be dynamic based on game state, GameManager?
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+
             Debug.Log("Game Started by Host");
-            // Additional logic to initialize game state can be added here
+            // hERE LOGIC RELATED TO WAVEMANAGER ETC
         }
     }
 }

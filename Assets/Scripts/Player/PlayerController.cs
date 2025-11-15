@@ -44,24 +44,23 @@ public class PlayerController : NetworkBehaviour
     private float verticalRotation;
     private Vector2 smoothedLookInput;
     private Vector2 currentLookVelocity;
-    
-    void Awake()
+
+    public override void OnNetworkSpawn()
     {
+        if (!IsOwner) return;
         // Get components
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
-        
+
         // Initialize input system
         inputActions = new PlayerInputs();
-        
+
         // Configure rigidbody
+        //rb.isKinematic = !IsOwner;
         rb.freezeRotation = true; // Prevent physics from rotating the player
         rb.interpolation = RigidbodyInterpolation.Interpolate;
 
-        // Lock cursor
-        //TODO : Change this later to be dynamic based on game state, GameManager?
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        SetLocalPlayerCameraActive(IsOwner);
     }
 
     void OnEnable()
@@ -121,8 +120,8 @@ public class PlayerController : NetworkBehaviour
         if (!IsOwner) return;
 
         // Handle looking (needs to be in Update for smooth camera movement)
-        ProcessLookInput();
-        ApplyRotation();
+        //ProcessLookInput();
+        //ApplyRotation();
     }
 
     void FixedUpdate()
@@ -260,6 +259,23 @@ public class PlayerController : NetworkBehaviour
         
         Debug.LogError("No camera or camera holder assigned!");
         return transform;
+    }
+
+    /// <summary>
+    /// Enables or disables the local player's camera and audio listener.
+    /// Prevents multiple active cameras/audio sources for non-owners.
+    /// </summary>
+    private void SetLocalPlayerCameraActive(bool active)
+    {
+        if (playerCamera != null)
+        {
+            playerCamera.enabled = active;
+
+            // Disable AudioListener on remote players to avoid "multiple AudioListener" warnings
+            AudioListener listener = playerCamera.GetComponent<AudioListener>();
+            if (listener != null)
+                listener.enabled = active;
+        }
     }
 
     // Public getters for other scripts

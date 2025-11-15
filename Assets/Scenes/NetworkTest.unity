@@ -685,7 +685,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1815537086}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &1815537089
 Camera:
   m_ObjectHideFlags: 0
@@ -722,7 +722,7 @@ Camera:
   field of view: 60
   orthographic: 0
   orthographic size: 5
-  m_Depth: 0
+  m_Depth: -10
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -764,9 +764,41 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 85799065
       objectReference: {fileID: 0}
+    - target: {fileID: 2747447227055550894, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2747447227055550894, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2747447227055550894, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2747447227055550894, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3387303993407367256, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
       propertyPath: m_Name
       value: UI
+      objectReference: {fileID: 0}
+    - target: {fileID: 4155520801737767628, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4155520801737767628, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4155520801737767628, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4155520801737767628, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8124733066197389003, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
       propertyPath: m_LocalPosition.x
@@ -821,6 +853,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 703951208637516089, guid: 2c1d7e10f2ab49843ad65144951e13dc, type: 3}
+      propertyPath: NetworkConfig.PlayerPrefab
+      value: 
+      objectReference: {fileID: 5241396416684125799, guid: f6537865f88164083b4de45707003e71, type: 3}
     - target: {fileID: 2319586639076798790, guid: 2c1d7e10f2ab49843ad65144951e13dc, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1.0148897

@@ -12,92 +12,95 @@ public class PlayerController : NetworkBehaviour
 {
     [Header("Configuration")]
     [SerializeField] private PlayerConfig playerConfig;
-    
+
     [Header("Camera")]
     [SerializeField] private Camera playerCamera;
     [SerializeField] private Transform cameraHolder;
-    
+
     [Header("Input Settings")]
     [SerializeField] private float lookSmoothTime = 0.1f;
     [SerializeField] private float inputThreshold = 0.01f;
-    
+
     [Header("Ground Check")]
     [SerializeField] private LayerMask groundMask = -1;
-    
+
     // Components
     private Rigidbody rb;
     private Collider col;
     private PlayerInputs inputActions;
-    
+
     // Input actions
     private InputAction moveAction;
     private InputAction lookAction;
     private InputAction jumpAction;
     private InputAction sprintAction;
-    
+
     // Movement
     private Vector2 moveInput;
     private bool isGrounded;
-    
+
     // Look rotation
     private float horizontalRotation;
     private float verticalRotation;
     private Vector2 smoothedLookInput;
     private Vector2 currentLookVelocity;
 
-    public override void OnNetworkSpawn()
+    void Awake()
     {
-        if (!IsOwner) return;
-        // Get components
+        // Get components early (safe in Awake)
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
-
-        // Initialize input system
-        inputActions = new PlayerInputs();
-
-        // Configure rigidbody
-        //rb.isKinematic = !IsOwner;
-        rb.freezeRotation = true; // Prevent physics from rotating the player
-        rb.interpolation = RigidbodyInterpolation.Interpolate;
-
-        SetLocalPlayerCameraActive(IsOwner);
     }
 
-    void OnEnable()
+    public override void OnNetworkSpawn()
     {
-        if (!IsOwner) return;
+        if (!IsOwner)
+        {
+            SetLocalPlayerCameraActive(false);
+            return;
+        }
 
-        // Enable input actions
+        // Initialize input system for owner
+        inputActions = new PlayerInputs();
+
+        // Setup and enable input actions immediately
         moveAction = inputActions.Player.Move;
         moveAction.Enable();
-        
+
         lookAction = inputActions.Player.Look;
         lookAction.Enable();
-        
+
         jumpAction = inputActions.Player.Jump;
         jumpAction.performed += OnJump;
         jumpAction.Enable();
-        
-        // Optional: Sprint action
+
         sprintAction = inputActions.Player.Sprint;
         sprintAction?.Enable();
+
+        // Configure rigidbody
+        rb.freezeRotation = true;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+
+        SetLocalPlayerCameraActive(true);
     }
 
-    void OnDisable()
+    public override void OnNetworkDespawn()
     {
-        if (!IsOwner) return;
+        if (!IsOwner || inputActions == null) return;
 
-        // Disable input actions
+        // Disable and cleanup input actions
         moveAction?.Disable();
         lookAction?.Disable();
-        
+
         if (jumpAction != null)
         {
             jumpAction.performed -= OnJump;
             jumpAction.Disable();
         }
-        
+
         sprintAction?.Disable();
+
+        inputActions?.Dispose();
     }
 
     void Start()
@@ -107,7 +110,7 @@ public class PlayerController : NetworkBehaviour
         // Initialize rotation values
         horizontalRotation = transform.eulerAngles.y;
         verticalRotation = GetCameraTransform().localEulerAngles.x;
-        
+
         // Normalize vertical rotation to -180 to 180 range
         if (verticalRotation > 180f)
         {
@@ -120,8 +123,8 @@ public class PlayerController : NetworkBehaviour
         if (!IsOwner) return;
 
         // Handle looking (needs to be in Update for smooth camera movement)
-        //ProcessLookInput();
-        //ApplyRotation();
+        ProcessLookInput();
+        ApplyRotation();
     }
 
     void FixedUpdate()
@@ -142,7 +145,7 @@ public class PlayerController : NetworkBehaviour
 
         // Read raw input
         Vector2 rawLookInput = lookAction.ReadValue<Vector2>();
-        
+
         // Apply deadzone threshold
         if (Mathf.Abs(rawLookInput.x) < inputThreshold) rawLookInput.x = 0f;
         if (Mathf.Abs(rawLookInput.y) < inputThreshold) rawLookInput.y = 0f;
@@ -158,11 +161,11 @@ public class PlayerController : NetworkBehaviour
         // Apply sensitivity and delta time
         float horizontalDelta = smoothedLookInput.x * playerConfig.CurrentHorizontalSensitivity * Time.deltaTime;
         float verticalDelta = smoothedLookInput.y * playerConfig.CurrentVerticalSensitivity * Time.deltaTime;
-        
+
         // Update rotation values
         horizontalRotation += horizontalDelta;
         verticalRotation -= verticalDelta; // Inverted for natural camera movement
-        
+
         // Clamp vertical rotation
         verticalRotation = Mathf.Clamp(verticalRotation, -playerConfig.VerticalLookClamp, playerConfig.VerticalLookClamp);
     }
@@ -177,7 +180,7 @@ public class PlayerController : NetworkBehaviour
         // Rotate player body horizontally
         Quaternion bodyRotation = Quaternion.Euler(0f, horizontalRotation, 0f);
         rb.MoveRotation(bodyRotation);
-        
+
         // Rotate camera vertically
         Transform camTransform = GetCameraTransform();
         camTransform.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f);
@@ -192,7 +195,7 @@ public class PlayerController : NetworkBehaviour
 
         // Read movement input
         moveInput = moveAction.ReadValue<Vector2>();
-        
+
         // Apply deadzone
         if (moveInput.magnitude < inputThreshold)
         {
@@ -200,23 +203,23 @@ public class PlayerController : NetworkBehaviour
             rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
             return;
         }
-        
+
         // Calculate movement direction relative to player rotation
         Vector3 forward = transform.forward;
         Vector3 right = transform.right;
-        
+
         // Project onto horizontal plane
         forward.y = 0f;
         right.y = 0f;
         forward.Normalize();
         right.Normalize();
-        
+
         // Calculate desired movement direction
         Vector3 moveDirection = (right * moveInput.x + forward * moveInput.y).normalized;
-        
+
         // Apply movement speed
         Vector3 targetVelocity = moveDirection * playerConfig.Speed;
-        
+
         // Apply velocity while preserving vertical component
         rb.linearVelocity = new Vector3(targetVelocity.x, rb.linearVelocity.y, targetVelocity.z);
     }
@@ -242,7 +245,7 @@ public class PlayerController : NetworkBehaviour
         Vector3 origin = transform.position;
         float radius = col.bounds.extents.x * 0.9f; // Slightly smaller than collider
         float distance = col.bounds.extents.y + playerConfig.GroundCheckDistance;
-        
+
         return Physics.SphereCast(origin, radius, Vector3.down, out _, distance, groundMask);
     }
 
@@ -253,10 +256,10 @@ public class PlayerController : NetworkBehaviour
     {
         if (cameraHolder != null)
             return cameraHolder;
-        
+
         if (playerCamera != null)
             return playerCamera.transform;
-        
+
         Debug.LogError("No camera or camera holder assigned!");
         return transform;
     }
@@ -287,13 +290,13 @@ public class PlayerController : NetworkBehaviour
     void OnDrawGizmosSelected()
     {
         if (col == null) return;
-        
+
         // Draw ground check sphere
         Gizmos.color = isGrounded ? Color.green : Color.red;
         Vector3 origin = transform.position;
         float radius = col.bounds.extents.x * 0.9f;
         float distance = col.bounds.extents.y + (playerConfig != null ? playerConfig.GroundCheckDistance : 0.2f);
-        
+
         Gizmos.DrawWireSphere(origin + Vector3.down * distance, radius);
     }
 }

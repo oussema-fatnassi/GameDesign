@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 10
   jumpForce: 5
-  horizontalSensitivity: 5
-  verticalSensitivity: 5
+  horizontalSensitivity: 20
+  verticalSensitivity: 20
   verticalLookClamp: 80
   groundCheckDistance: 0.2

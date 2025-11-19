@@ -43,14 +43,31 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        // Example: Toggle pause state with Escape key
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            _isGamePaused = !_isGamePaused;
+            if (_isGamePaused)
+            {
+                Time.timeScale = 0f; // Pause game
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else
+            {
+                Time.timeScale = 1f; // Resume game
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+        }
+    }
     #endregion
 
     // Method to start the game
     private void StartGame()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
         Debug.LogError("Client Called StartGame: " + _clientType);
         if (_clientType == EClientType.HOST)
         {

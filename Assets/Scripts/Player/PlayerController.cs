@@ -4,11 +4,11 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Main player controller handling movement, looking, and jumping
-/// Requires: Rigidbody, Collider, PlayerConfig ScriptableObject
+/// This script should be added to the ownerOnlyScripts array in PlayerInitializer
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(Collider))]
-public class PlayerController : NetworkBehaviour
+public class PlayerController : MonoBehaviour
 {
     [Header("Configuration")]
     [SerializeField] private PlayerConfig playerConfig;
@@ -47,23 +47,17 @@ public class PlayerController : NetworkBehaviour
 
     void Awake()
     {
-        // Get components early (safe in Awake)
+        // Get components
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
+
+        // Initialize input system
+        inputActions = new PlayerInputs();
     }
 
-    public override void OnNetworkSpawn()
+    void OnEnable()
     {
-        if (!IsOwner)
-        {
-            SetLocalPlayerCameraActive(false);
-            return;
-        }
-
-        // Initialize input system for owner
-        inputActions = new PlayerInputs();
-
-        // Setup and enable input actions immediately
+        // Enable input actions
         moveAction = inputActions.Player.Move;
         moveAction.Enable();
 
@@ -76,19 +70,11 @@ public class PlayerController : NetworkBehaviour
 
         sprintAction = inputActions.Player.Sprint;
         sprintAction?.Enable();
-
-        // Configure rigidbody
-        rb.freezeRotation = true;
-        rb.interpolation = RigidbodyInterpolation.Interpolate;
-
-        SetLocalPlayerCameraActive(true);
     }
 
-    public override void OnNetworkDespawn()
+    void OnDisable()
     {
-        if (!IsOwner || inputActions == null) return;
-
-        // Disable and cleanup input actions
+        // Disable input actions
         moveAction?.Disable();
         lookAction?.Disable();
 
@@ -99,19 +85,19 @@ public class PlayerController : NetworkBehaviour
         }
 
         sprintAction?.Disable();
-
-        inputActions?.Dispose();
     }
 
     void Start()
     {
-        if (!IsOwner) return;
+        // Configure rigidbody
+        rb.freezeRotation = true;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        rb.useGravity = true;
 
         // Initialize rotation values
         horizontalRotation = transform.eulerAngles.y;
         verticalRotation = GetCameraTransform().localEulerAngles.x;
 
-        // Normalize vertical rotation to -180 to 180 range
         if (verticalRotation > 180f)
         {
             verticalRotation -= 360f;
@@ -120,37 +106,25 @@ public class PlayerController : NetworkBehaviour
 
     void Update()
     {
-        if (!IsOwner) return;
-
-        // Handle looking (needs to be in Update for smooth camera movement)
+        // Handle looking
         ProcessLookInput();
         ApplyRotation();
     }
 
     void FixedUpdate()
     {
-        if (!IsOwner) return;
-
-        // Handle movement (in FixedUpdate for physics)
+        // Handle movement
         isGrounded = CheckGrounded();
         ProcessMovement();
     }
 
-    /// <summary>
-    /// Processes look input with smoothing and sensitivity
-    /// </summary>
     void ProcessLookInput()
     {
-        if (!IsOwner) return;
-
-        // Read raw input
         Vector2 rawLookInput = lookAction.ReadValue<Vector2>();
 
-        // Apply deadzone threshold
         if (Mathf.Abs(rawLookInput.x) < inputThreshold) rawLookInput.x = 0f;
         if (Mathf.Abs(rawLookInput.y) < inputThreshold) rawLookInput.y = 0f;
 
-        // Smooth the input
         smoothedLookInput = Vector2.SmoothDamp(
             smoothedLookInput,
             rawLookInput,
@@ -158,100 +132,65 @@ public class PlayerController : NetworkBehaviour
             lookSmoothTime
         );
 
-        // Apply sensitivity and delta time
         float horizontalDelta = smoothedLookInput.x * playerConfig.CurrentHorizontalSensitivity * Time.deltaTime;
         float verticalDelta = smoothedLookInput.y * playerConfig.CurrentVerticalSensitivity * Time.deltaTime;
 
-        // Update rotation values
         horizontalRotation += horizontalDelta;
-        verticalRotation -= verticalDelta; // Inverted for natural camera movement
+        verticalRotation -= verticalDelta;
 
-        // Clamp vertical rotation
         verticalRotation = Mathf.Clamp(verticalRotation, -playerConfig.VerticalLookClamp, playerConfig.VerticalLookClamp);
     }
 
-    /// <summary>
-    /// Applies calculated rotation to player body and camera
-    /// </summary>
     void ApplyRotation()
     {
-        if (!IsOwner) return;
-
-        // Rotate player body horizontally
         Quaternion bodyRotation = Quaternion.Euler(0f, horizontalRotation, 0f);
         rb.MoveRotation(bodyRotation);
 
-        // Rotate camera vertically
         Transform camTransform = GetCameraTransform();
         camTransform.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f);
     }
 
-    /// <summary>
-    /// Processes movement input and applies velocity
-    /// </summary>
     void ProcessMovement()
     {
-        if (!IsOwner) return;
-
-        // Read movement input
         moveInput = moveAction.ReadValue<Vector2>();
 
-        // Apply deadzone
         if (moveInput.magnitude < inputThreshold)
         {
-            // Stop horizontal movement but keep vertical velocity (gravity/jumping)
             rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
             return;
         }
 
-        // Calculate movement direction relative to player rotation
         Vector3 forward = transform.forward;
         Vector3 right = transform.right;
 
-        // Project onto horizontal plane
         forward.y = 0f;
         right.y = 0f;
         forward.Normalize();
         right.Normalize();
 
-        // Calculate desired movement direction
         Vector3 moveDirection = (right * moveInput.x + forward * moveInput.y).normalized;
-
-        // Apply movement speed
         Vector3 targetVelocity = moveDirection * playerConfig.Speed;
 
-        // Apply velocity while preserving vertical component
         rb.linearVelocity = new Vector3(targetVelocity.x, rb.linearVelocity.y, targetVelocity.z);
     }
 
-    /// <summary>
-    /// Handles jump input
-    /// </summary>
     void OnJump(InputAction.CallbackContext context)
     {
-        if (!IsOwner) return;
-
         if (isGrounded)
         {
             rb.AddForce(Vector3.up * playerConfig.CurrentJumpForce, ForceMode.Impulse);
         }
     }
 
-    /// <summary>
-    /// Checks if player is on the ground using spherecast
-    /// </summary>
     bool CheckGrounded()
     {
         Vector3 origin = transform.position;
-        float radius = col.bounds.extents.x * 0.9f; // Slightly smaller than collider
+        float radius = col.bounds.extents.x * 0.9f;
         float distance = col.bounds.extents.y + playerConfig.GroundCheckDistance;
 
         return Physics.SphereCast(origin, radius, Vector3.down, out _, distance, groundMask);
     }
 
-    /// <summary>
-    /// Gets the camera transform (either from cameraHolder or playerCamera)
-    /// </summary>
     Transform GetCameraTransform()
     {
         if (cameraHolder != null)
@@ -264,34 +203,15 @@ public class PlayerController : NetworkBehaviour
         return transform;
     }
 
-    /// <summary>
-    /// Enables or disables the local player's camera and audio listener.
-    /// Prevents multiple active cameras/audio sources for non-owners.
-    /// </summary>
-    private void SetLocalPlayerCameraActive(bool active)
-    {
-        if (playerCamera != null)
-        {
-            playerCamera.enabled = active;
-
-            // Disable AudioListener on remote players to avoid "multiple AudioListener" warnings
-            AudioListener listener = playerCamera.GetComponent<AudioListener>();
-            if (listener != null)
-                listener.enabled = active;
-        }
-    }
-
-    // Public getters for other scripts
+    // Public getters
     public bool IsGrounded => isGrounded;
     public Vector2 MoveInput => moveInput;
     public Rigidbody Rigidbody => rb;
 
-    // Debug visualization
     void OnDrawGizmosSelected()
     {
         if (col == null) return;
 
-        // Draw ground check sphere
         Gizmos.color = isGrounded ? Color.green : Color.red;
         Vector3 origin = transform.position;
         float radius = col.bounds.extents.x * 0.9f;

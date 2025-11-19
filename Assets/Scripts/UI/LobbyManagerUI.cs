@@ -1,5 +1,6 @@
 using TMPro;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -53,5 +54,7 @@ public class LobbyManagerUI : NetworkBehaviour
     public void HideLobbyUIClientRpc()
     {
         this.gameObject.SetActive(false);
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 }

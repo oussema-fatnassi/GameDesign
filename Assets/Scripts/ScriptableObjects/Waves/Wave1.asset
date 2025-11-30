@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2324a079a9889e140b22ee3febb88013, type: 3}
+  m_Name: Wave1
+  m_EditorClassIdentifier: 
+  waveName: Wave 1 - Introduction
+  waveDescription: 'First wave: Scouts from all directions'
+  subWaves:
+  - subWaveName: Initial Scouts
+    spawnDelay: 0
+    enemyGroups:
+    - enemyType: 0
+      count: 5
+      spawnInterval: 1
+  - subWaveName: Fast Runners
+    spawnDelay: 10
+    enemyGroups:
+    - enemyType: 1
+      count: 3
+      spawnInterval: 0.5
+  - subWaveName: Mixed Assault
+    spawnDelay: 20
+    enemyGroups:
+    - enemyType: 0
+      count: 2
+      spawnInterval: 1
+    - enemyType: 1
+      count: 2
+      spawnInterval: 1

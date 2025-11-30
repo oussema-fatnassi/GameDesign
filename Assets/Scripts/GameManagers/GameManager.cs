@@ -1,9 +1,13 @@
+﻿using Unity.Netcode;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
     #region Fields
-    private EClientType  _clientType = EClientType.NONE;
+    [Header("Wave System")]
+    [SerializeField] private WaveManager waveManager; // Référence au WaveManager
+
+    private EClientType _clientType = EClientType.NONE;
     private bool _isGamePaused = false;
     private bool _isStarted = false;
     private bool _isGameOver = false;
@@ -19,7 +23,8 @@ public class GameManager : MonoBehaviour
     public bool IsStarted
     {
         get { return _isStarted; }
-        set { 
+        set
+        {
             _isStarted = value;
             if (_isStarted) StartGame();
         }
@@ -45,19 +50,17 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        // Example: Toggle pause state with Escape key
+        // Toggle pause state with Escape key
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             _isGamePaused = !_isGamePaused;
             if (_isGamePaused)
             {
-                Time.timeScale = 0f; // Pause game
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
             else
             {
-                Time.timeScale = 1f; // Resume game
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
@@ -65,18 +68,63 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
-    // Method to start the game
+    /// <summary>
+    /// Method to start the game
+    /// </summary>
     private void StartGame()
     {
-        Debug.LogError("Client Called StartGame: " + _clientType);
+        Debug.Log("Client Called StartGame: " + _clientType);
+
         if (_clientType == EClientType.HOST)
         {
-            // Lock cursor
-            //TODO : Change this later to be dynamic based on game state, GameManager?
-            
-
             Debug.Log("Game Started by Host");
-            // hERE LOGIC RELATED TO WAVEMANAGER ETC
+
+            // Start wave system
+            if (waveManager != null)
+            {
+                waveManager.StartWaveSystem();
+            }
+            else
+            {
+                Debug.LogError("WaveManager not assigned to GameManager!");
+            }
         }
+    }
+
+    /// <summary>
+    /// Public method to stop the game
+    /// </summary>
+    public void StopGame()
+    {
+        if (_clientType == EClientType.HOST && waveManager != null)
+        {
+            waveManager.StopWaveSystem();
+        }
+
+        _isGameOver = true;
+    }
+
+    /// <summary>
+    /// Called when all waves are completed
+    /// </summary>
+    public void OnVictory()
+    {
+        Debug.Log("=== VICTORY! All waves completed! ===");
+        _isGameOver = true;
+
+        // Show victory screen, etc.
+        // TODO: Implement victory UI
+    }
+
+    /// <summary>
+    /// Called when players lose (optional)
+    /// </summary>
+    public void OnDefeat()
+    {
+        Debug.Log("=== DEFEAT! Objective destroyed! ===");
+        _isGameOver = true;
+
+        // Show defeat screen, etc.
+        // TODO: Implement defeat UI
     }
 }

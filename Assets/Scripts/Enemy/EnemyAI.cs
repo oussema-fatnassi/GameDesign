@@ -1,6 +1,7 @@
+using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
-using System.Collections;
 
 /// <summary>
 /// Basic enemy AI with NavMesh pathfinding
@@ -8,7 +9,8 @@ using System.Collections;
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Health))]
-public class EnemyAI : MonoBehaviour
+[RequireComponent(typeof(NetworkObject))]
+public class EnemyAI : NetworkBehaviour
 {
     [Header("Configuration")]
     [SerializeField] private EnemyConfig enemyConfig;
@@ -30,6 +32,8 @@ public class EnemyAI : MonoBehaviour
     
     // State
     private EnemyState currentState = EnemyState.Moving;
+
+    public Health Health { get { return health; } }
     
     void Awake()
     {
@@ -42,6 +46,12 @@ public class EnemyAI : MonoBehaviour
     
     void Start()
     {
+        if (!IsServer)
+        {
+            enabled = false;
+            return;
+        }
+
         if (enemyConfig == null)
         {
             Debug.LogError($"EnemyConfig not assigned on {gameObject.name}!");
@@ -72,8 +82,8 @@ public class EnemyAI : MonoBehaviour
     
     void Update()
     {
-        if (health.IsDead)
-            return;
+        if (!IsServer) return;
+        if (health.IsDead) return;
         
         // Update behavior based on state
         switch (currentState)

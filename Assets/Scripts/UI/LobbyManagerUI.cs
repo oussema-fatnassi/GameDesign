@@ -10,6 +10,8 @@ public class LobbyManagerUI : NetworkBehaviour
     [SerializeField] private Button _clientBtn;
     [SerializeField] private Button _startButton;
     [SerializeField] private TextMeshProUGUI _waitingTxt;
+    [SerializeField] private GameObject _crosshair;
+    [SerializeField] private GameObject _UIContainer;
 
     private void Awake()
     {
@@ -55,6 +57,8 @@ public class LobbyManagerUI : NetworkBehaviour
     {
         this.gameObject.SetActive(false);
         Cursor.lockState = CursorLockMode.Locked;
+        _crosshair.SetActive(true);
+        _UIContainer.SetActive(true);
         Cursor.visible = false;
     }
 }

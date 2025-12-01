@@ -7850,6 +7850,14 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5022313094132883866, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+      propertyPath: _crosshair
+      value: 
+      objectReference: {fileID: 368370227}
+    - target: {fileID: 5022313094132883866, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+      propertyPath: _UIContainer
+      value: 
+      objectReference: {fileID: 178819707}
     - target: {fileID: 7222767523517705853, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
       propertyPath: m_text
       value: Core :100 / 100

@@ -60,6 +60,15 @@ public class PlayerControllerNetwork : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+
+        if (IsOwner) 
+        {
+            if (PlayerSpawner.Instance != null)
+            {
+                transform.position = PlayerSpawner.Instance.GetRandomPosition();
+            }
+        }
+        
         if (!IsOwner)
         {
             SetLocalPlayerCameraActive(false);

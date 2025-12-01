@@ -239,7 +239,7 @@ public class EnemyAI : NetworkBehaviour
         // TODO: Spawn death particles
         
         // Destroy after delay
-        Destroy(gameObject, 2f);
+        Destroy(gameObject, 0f);
     }
     
     // Public method for damage feedback (optional)

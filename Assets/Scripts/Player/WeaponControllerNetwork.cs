@@ -2,6 +2,7 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System;
 
 /// <summary>
 /// Networked weapon controller with ServerRPC hit detection
@@ -21,9 +22,6 @@ public class WeaponControllerNetwork : NetworkBehaviour
     [SerializeField] private LineRenderer bulletTracerPrefab; // This should just be a prefab, NO NetworkObject needed
     [SerializeField] private float tracerDuration = 0.05f;
 
-    [Header("UI")]
-    [SerializeField] private Crosshair crosshair;
-
     [Header("Shooting Settings")]
     [SerializeField] private LayerMask hitLayers = -1;
     [SerializeField] private bool showDebugRays = true;
@@ -40,6 +38,8 @@ public class WeaponControllerNetwork : NetworkBehaviour
     // Fire rate control
     private float nextFireTime;
     private bool canShoot = true;
+
+    public static event Action OnHit;
 
     void Awake()
     {
@@ -178,10 +178,7 @@ public class WeaponControllerNetwork : NetworkBehaviour
             Debug.Log($"Hit: {hit.collider.name}");
 
             // Show crosshair feedback immediately
-            if (crosshair != null)
-            {
-                crosshair.ShowHitFeedback();
-            }
+            OnHit?.Invoke();
 
             // Spawn impact effect locally (CLIENT-SIDE ONLY - no network)
             SpawnImpactEffect(hit.point, hit.normal);
@@ -247,9 +244,9 @@ public class WeaponControllerNetwork : NetworkBehaviour
         float spread = weaponConfig.Spread;
 
         Vector3 randomSpread = new Vector3(
-            Random.Range(-spread, spread),
-            Random.Range(-spread, spread),
-            Random.Range(-spread, spread)
+            UnityEngine.Random.Range(-spread, spread),
+            UnityEngine.Random.Range(-spread, spread),
+            UnityEngine.Random.Range(-spread, spread)
         );
 
         return (direction + randomSpread).normalized;

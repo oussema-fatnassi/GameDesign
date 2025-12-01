@@ -176,7 +176,7 @@ public class WeaponController : MonoBehaviour
         {
             // We hit something!
             HandleHit(hit);
-            
+
             // Show crosshair hit feedback
             OnHit?.Invoke();
         }

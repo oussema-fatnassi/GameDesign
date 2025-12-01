@@ -8754,6 +8754,22 @@ PrefabInstance:
       value: WaveManager
       objectReference: {fileID: 0}
     - target: {fileID: 5490176276446472434, guid: 764da1b1bbf46f84cb70d4bb0445b8a8, type: 3}
+      propertyPath: useTestMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5490176276446472434, guid: 764da1b1bbf46f84cb70d4bb0445b8a8, type: 3}
+      propertyPath: waves.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5490176276446472434, guid: 764da1b1bbf46f84cb70d4bb0445b8a8, type: 3}
+      propertyPath: 'waves.Array.data[0]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 4749ebfc589d53448b1150a62963f013, type: 2}
+    - target: {fileID: 5490176276446472434, guid: 764da1b1bbf46f84cb70d4bb0445b8a8, type: 3}
+      propertyPath: 'waves.Array.data[1]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 52a142485f434204eb51cb44078b9c99, type: 2}
+    - target: {fileID: 5490176276446472434, guid: 764da1b1bbf46f84cb70d4bb0445b8a8, type: 3}
       propertyPath: 'spawnPoints.Array.data[0]'
       value: 
       objectReference: {fileID: 1998200349}
@@ -9700,7 +9716,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1855710519}
   - component: {fileID: 1855710518}
-  - component: {fileID: 1855710517}
   - component: {fileID: 1855710516}
   m_Layer: 0
   m_Name: Camera
@@ -9753,14 +9768,6 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
---- !u!81 &1855710517
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1855710515}
-  m_Enabled: 1
 --- !u!20 &1855710518
 Camera:
   m_ObjectHideFlags: 0

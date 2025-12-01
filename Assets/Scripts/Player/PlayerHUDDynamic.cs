@@ -5,7 +5,7 @@ using System.Collections;
 
 /// <summary>
 /// Dynamic HUD that automatically finds and connects to the local player
-/// Waits for the game to start before searching
+/// Waits for the GAME to start (GameManager.IsStarted), not just network connection
 /// </summary>
 public class PlayerHUDDynamic : MonoBehaviour
 {
@@ -35,13 +35,13 @@ public class PlayerHUDDynamic : MonoBehaviour
     
     void Update()
     {
-        // Wait for NetworkManager to be active (game started)
-        if (!hasStartedSearching && NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+        // Wait for GAME to start (not just network connection)
+        if (!hasStartedSearching && GameManager.Instance != null && GameManager.Instance.IsStarted)
         {
             hasStartedSearching = true;
             
             if (showDebugLogs)
-                Debug.Log("HUD: Game started, beginning player search...");
+                Debug.Log("HUD: Game started (IsStarted = true), beginning player search...");
             
             StartCoroutine(FindLocalPlayer());
         }
@@ -96,7 +96,7 @@ public class PlayerHUDDynamic : MonoBehaviour
                         Debug.Log($"HUD: Weapon component: {(weaponController != null ? "✓ FOUND" : "✗ MISSING")}");
                     }
                     
-                    // Need weapon at minimum (health might be on a child object)
+                    // Need weapon at minimum
                     if (weaponController != null)
                     {
                         // Try to find Health on the player or its children
@@ -126,6 +126,9 @@ public class PlayerHUDDynamic : MonoBehaviour
                     }
                 }
             }
+            
+            if (showDebugLogs && attemptCount % 4 == 0)
+                Debug.Log($"HUD: Still searching... (attempt {attemptCount}/{maxAttempts})");
         }
         
         if (!isConnected)
@@ -186,6 +189,10 @@ public class PlayerHUDDynamic : MonoBehaviour
         reservesText.color = ammoColor;
     }
     
+    /// <summary>
+    /// Public method to manually reconnect to a new player
+    /// Call this if the player respawns
+    /// </summary>
     public void Reconnect()
     {
         isConnected = false;
@@ -197,5 +204,8 @@ public class PlayerHUDDynamic : MonoBehaviour
             Debug.Log("HUD: Reconnecting...");
     }
     
+    /// <summary>
+    /// Check if HUD is connected to a player
+    /// </summary>
     public bool IsConnected => isConnected;
 }

@@ -15,7 +15,7 @@ MonoBehaviour:
   enemyName: Runner
   description: Fast melee enemy. Flanks and harasses players.
   maxHealth: 30
-  moveSpeed: 6.5
+  moveSpeed: 3.5
   attackRange: 1.5
   objectiveAttackRange: 2.5
   attackDamage: 15
@@ -23,5 +23,5 @@ MonoBehaviour:
   canAttackPlayers: 1
   canAttackObjective: 1
   targetPriority: 1
-  playerDetectionRange: 15
+  playerDetectionRange: 50
   killPoints: 15

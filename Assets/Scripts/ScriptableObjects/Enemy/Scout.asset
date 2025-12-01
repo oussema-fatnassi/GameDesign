@@ -23,5 +23,5 @@ MonoBehaviour:
   canAttackPlayers: 1
   canAttackObjective: 1
   targetPriority: 0
-  playerDetectionRange: 10
+  playerDetectionRange: 40
   killPoints: 10

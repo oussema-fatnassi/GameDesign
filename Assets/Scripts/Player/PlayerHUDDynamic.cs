@@ -5,9 +5,8 @@ using System.Collections;
 
 /// <summary>
 /// Dynamic HUD that automatically finds and connects to the local player and PowerCore
-/// Waits for the GAME to start (GameManager.IsStarted), not just network connection
 /// Shows game over message when PowerCore is destroyed
-/// FIXED: Better handling of NetworkVariable sync for PowerCore
+/// FIXED: Event subscription + coroutine wait for NetworkVariable sync
 /// </summary>
 public class PlayerHUDDynamic : MonoBehaviour
 {
@@ -16,44 +15,40 @@ public class PlayerHUDDynamic : MonoBehaviour
     [SerializeField] private TextMeshProUGUI ammoText;
     [SerializeField] private TextMeshProUGUI reservesText;
     [SerializeField] private TextMeshProUGUI powerCoreText;
-    [SerializeField] private GameObject gameOverPanel; // Optional: Full game over screen
-    [SerializeField] private TextMeshProUGUI gameOverText; // Optional: Game over message
-    
+    [SerializeField] private GameObject gameOverPanel;
+    [SerializeField] private TextMeshProUGUI gameOverText;
+
     [Header("Settings")]
     [SerializeField] private bool showHealthPercentage = false;
     [SerializeField] private Color lowHealthColor = Color.red;
     [SerializeField] private Color normalHealthColor = Color.white;
     [SerializeField] private float lowHealthThreshold = 0.3f;
-    
+
     [SerializeField] private Color lowAmmoColor = new Color(1f, 0.5f, 0f);
     [SerializeField] private Color normalAmmoColor = Color.white;
     [SerializeField] private float lowAmmoThreshold = 0.25f;
-    
+
     [SerializeField] private Color criticalPowerCoreColor = Color.red;
-    [SerializeField] private Color warningPowerCoreColor = new Color(1f, 0.6f, 0f); // Orange
+    [SerializeField] private Color warningPowerCoreColor = new Color(1f, 0.6f, 0f);
     [SerializeField] private Color normalPowerCoreColor = Color.cyan;
-    [SerializeField] private float criticalPowerCoreThreshold = 0.25f; // 25%
-    [SerializeField] private float warningPowerCoreThreshold = 0.5f; // 50%
-    
+    [SerializeField] private float criticalPowerCoreThreshold = 0.25f;
+    [SerializeField] private float warningPowerCoreThreshold = 0.5f;
+
     [Header("Debug")]
     [SerializeField] private bool showDebugLogs = true;
     [SerializeField] private GameObject UIContainer;
     [SerializeField] private GameObject crosshairObject;
-    
+
     // Dynamic references
     private Health playerHealth;
     private WeaponControllerNetwork weaponController;
     private Health powerCoreHealth;
-    private NetworkObject powerCoreNetworkObject; // Store for network checks
-    
+    private NetworkObject powerCoreNetworkObject;
+
     private bool isConnectedToPlayer = false;
     private bool isConnectedToPowerCore = false;
     private bool hasStartedSearching = false;
     private bool powerCoreDestroyed = false;
-    
-    // Network sync tracking
-    private bool powerCoreNetworkReady = false;
-    private float powerCoreLastHealth = -1f; // Track last known health
 
     void Start()
     {
@@ -66,16 +61,16 @@ public class PlayerHUDDynamic : MonoBehaviour
             crosshairObject.SetActive(false);
         }
     }
-    
+
     void Update()
     {
-        // Wait for GAME to start (not just network connection)
+        // Wait for GAME to start
         if (!hasStartedSearching && GameManager.Instance != null && GameManager.Instance.IsStarted)
         {
             hasStartedSearching = true;
-            
+
             if (showDebugLogs)
-                Debug.Log("HUD: Game started (IsStarted = true), beginning search...");
+                Debug.Log("HUD: Game started, beginning search...");
 
             if (UIContainer != null)
             {
@@ -86,23 +81,22 @@ public class PlayerHUDDynamic : MonoBehaviour
                 crosshairObject.SetActive(true);
             }
 
-            // Subscribe to the event for any future updates (optional but good practice)
             GameManager.Instance._isGameStartedEvent += OnGameStarted;
-            
+
             StartCoroutine(FindLocalPlayer());
             StartCoroutine(FindPowerCore());
         }
-        
-        // Update displays if connected
+
+        // Update player displays
         if (isConnectedToPlayer && playerHealth != null && weaponController != null)
         {
             UpdateHealthDisplay();
             UpdateAmmoDisplay();
         }
-        
-        if (isConnectedToPowerCore && powerCoreHealth != null)
+
+        // Check for destroyed state
+        if (isConnectedToPowerCore && powerCoreHealth != null && !powerCoreDestroyed)
         {
-            UpdatePowerCoreDisplay();
             CheckPowerCoreDestroyed();
         }
     }
@@ -116,201 +110,163 @@ public class PlayerHUDDynamic : MonoBehaviour
                 UIContainer.SetActive(true);
             }
             if (crosshairObject != null)
-            { crosshairObject.SetActive(true);}
+            {
+                crosshairObject.SetActive(true);
+            }
         }
     }
-    
-    /// <summary>
-    /// Finds the local player in the scene
-    /// </summary>
+
     IEnumerator FindLocalPlayer()
     {
         if (showDebugLogs)
             Debug.Log("HUD: Searching for local player...");
-        
+
         int attemptCount = 0;
         const int maxAttempts = 20;
-        
+
         while (!isConnectedToPlayer && attemptCount < maxAttempts)
         {
             attemptCount++;
-            
-            // Wait before checking
             yield return new WaitForSeconds(0.5f);
-            
-            // Find all player controllers
+
             PlayerControllerNetwork[] players = FindObjectsOfType<PlayerControllerNetwork>();
-            
-            if (showDebugLogs && attemptCount == 1)
-                Debug.Log($"HUD: Found {players.Length} PlayerControllerNetwork(s) in scene");
-            
+
             foreach (var player in players)
             {
-                // Check if this is the local player
                 if (player.IsOwner && player.IsSpawned)
                 {
-                    if (showDebugLogs)
-                        Debug.Log($"HUD: Checking player '{player.gameObject.name}'");
-                    
-                    // Get components
                     playerHealth = player.GetComponent<Health>();
                     weaponController = player.GetComponent<WeaponControllerNetwork>();
-                    
-                    if (showDebugLogs)
+
+                    if (playerHealth == null)
                     {
-                        Debug.Log($"HUD: Health component: {(playerHealth != null ? "✓ FOUND" : "✗ MISSING")}");
-                        Debug.Log($"HUD: Weapon component: {(weaponController != null ? "✓ FOUND" : "✗ MISSING")}");
+                        playerHealth = player.GetComponentInChildren<Health>();
                     }
-                    
-                    // Need weapon at minimum
-                    if (weaponController != null)
+
+                    if (playerHealth != null && weaponController != null)
                     {
-                        // Try to find Health on the player or its children
-                        if (playerHealth == null)
-                        {
-                            playerHealth = player.GetComponentInChildren<Health>();
-                            
-                            if (showDebugLogs && playerHealth != null)
-                                Debug.Log($"HUD: Found Health component in children!");
-                        }
-                        
-                        if (playerHealth != null)
-                        {
-                            isConnectedToPlayer = true;
-                            Debug.Log($"✓✓✓ HUD CONNECTED to local player: {player.gameObject.name} ✓✓✓");
-                            
-                            // Force immediate update
-                            UpdateHealthDisplay();
-                            UpdateAmmoDisplay();
-                            
-                            yield break;
-                        }
-                        else
-                        {
-                            Debug.LogError($"HUD: Found player and weapon but NO HEALTH component! Add Health component to your player prefab.");
-                        }
+                        isConnectedToPlayer = true;
+                        Debug.Log($"✓ HUD CONNECTED to local player: {player.gameObject.name}");
+
+                        UpdateHealthDisplay();
+                        UpdateAmmoDisplay();
+                        yield break;
                     }
                 }
             }
-            
-            if (showDebugLogs && attemptCount % 4 == 0)
-                Debug.Log($"HUD: Still searching for player... (attempt {attemptCount}/{maxAttempts})");
         }
-        
+
         if (!isConnectedToPlayer)
         {
-            Debug.LogError($"HUD: Failed to find local player after {attemptCount} attempts!");
-            Debug.LogError("Make sure your player prefab has: PlayerControllerNetwork, Health, and WeaponControllerNetwork components.");
+            Debug.LogError($"HUD: Failed to find local player!");
         }
     }
-    
+
     /// <summary>
-    /// Finds the PowerCore (Objective) in the scene
-    /// IMPROVED: Better network sync handling
+    /// Finds the PowerCore and subscribes to its OnDamaged event
     /// </summary>
     IEnumerator FindPowerCore()
     {
         if (showDebugLogs)
             Debug.Log("HUD: Searching for PowerCore...");
-        
+
         int attemptCount = 0;
-        const int maxAttempts = 30; // Increased attempts for network sync
-        
+        const int maxAttempts = 30;
+
         while (!isConnectedToPowerCore && attemptCount < maxAttempts)
         {
             attemptCount++;
-            
-            // Wait before checking (longer on first attempt for network spawn)
             yield return new WaitForSeconds(attemptCount == 1 ? 1.0f : 0.5f);
-            
-            // Find objective by tag
+
             GameObject objectiveObject = GameObject.FindGameObjectWithTag("Objective");
-            
+
             if (objectiveObject != null)
             {
-                if (showDebugLogs && attemptCount == 1)
-                    Debug.Log($"HUD: Found Objective '{objectiveObject.name}'");
-                
-                // Get Health component
                 powerCoreHealth = objectiveObject.GetComponent<Health>();
                 powerCoreNetworkObject = objectiveObject.GetComponent<NetworkObject>();
-                
-                if (powerCoreHealth != null)
+
+                if (powerCoreHealth != null && powerCoreNetworkObject != null && powerCoreNetworkObject.IsSpawned)
                 {
-                    // Check if NetworkObject is spawned (important for clients!)
-                    if (powerCoreNetworkObject != null && powerCoreNetworkObject.IsSpawned)
+                    // Wait for NetworkVariable to sync
+                    yield return new WaitForSeconds(0.5f);
+
+                    float maxHealth = powerCoreHealth.MaxHealth;
+                    float currentHealth = powerCoreHealth.CurrentHealth;
+
+                    if (showDebugLogs)
+                        Debug.Log($"HUD: PowerCore health check - Current: {currentHealth}, Max: {maxHealth}");
+
+                    if (maxHealth > 0)
                     {
-                        // Wait a bit more for NetworkVariable to sync
-                        yield return new WaitForSeconds(0.5f);
-                        
-                        // Verify health has actual values (not just defaults)
-                        float maxHealth = powerCoreHealth.MaxHealth;
-                        float currentHealth = powerCoreHealth.CurrentHealth;
-                        
-                        if (showDebugLogs)
-                            Debug.Log($"HUD: PowerCore health check - Current: {currentHealth}, Max: {maxHealth}");
-                        
-                        // Only connect if we have valid health values
-                        if (maxHealth > 0)
-                        {
-                            isConnectedToPowerCore = true;
-                            powerCoreNetworkReady = true;
-                            Debug.Log($"✓✓✓ HUD CONNECTED to PowerCore: {objectiveObject.name} (Health: {currentHealth}/{maxHealth}) ✓✓✓");
-                            
-                            // Force immediate update
-                            UpdatePowerCoreDisplay();
-                            
-                            yield break;
-                        }
-                        else
-                        {
-                            if (showDebugLogs && attemptCount % 4 == 0)
-                                Debug.Log($"HUD: PowerCore found but health not synced yet... (attempt {attemptCount}/{maxAttempts})");
-                        }
-                    }
-                    else
-                    {
-                        if (showDebugLogs && attemptCount % 4 == 0)
-                            Debug.Log($"HUD: PowerCore NetworkObject not spawned yet... (attempt {attemptCount}/{maxAttempts})");
+                        isConnectedToPowerCore = true;
+
+                        Debug.Log("HUD: ★★★ Subscribing to PowerCore OnDamaged event ★★★");
+
+                        // 🎯 CHANGEMENT 1: Subscribe to OnDamaged event
+                        powerCoreHealth.OnDamaged.AddListener(OnPowerCoreDamaged);
+
+                        Debug.Log($"✓ HUD CONNECTED to PowerCore: {objectiveObject.name} (Health: {currentHealth}/{maxHealth})");
+
+                        // Initial display update
+                        UpdatePowerCoreDisplay();
+
+                        yield break;
                     }
                 }
-                else
-                {
-                    Debug.LogWarning($"HUD: Found Objective but it has NO HEALTH component!");
-                }
-            }
-            else
-            {
-                if (showDebugLogs && attemptCount % 4 == 0)
-                    Debug.Log($"HUD: Still searching for PowerCore... (attempt {attemptCount}/{maxAttempts})");
             }
         }
-        
+
         if (!isConnectedToPowerCore)
         {
-            Debug.LogError($"HUD: Failed to find PowerCore after {attemptCount} attempts!");
-            Debug.LogError("Make sure you have a GameObject with tag 'Objective', Health component, and NetworkObject.");
+            Debug.LogError($"HUD: Failed to find PowerCore!");
         }
     }
-    
+
+    /// <summary>
+    /// 🎯 CHANGEMENT 2: Called whenever PowerCore takes damage
+    /// Uses coroutine to wait for NetworkVariable sync
+    /// </summary>
+    void OnPowerCoreDamaged(float damage)
+    {
+        Debug.Log($"██████████████████████████████████████");
+        Debug.Log($"HUD: OnPowerCoreDamaged called!");
+        Debug.Log($"  damage: {damage}");
+
+        // 🎯 CHANGEMENT 3: Wait for NetworkVariable to sync before updating
+        StartCoroutine(WaitForPowerCoreHealthSync());
+
+        Debug.Log($"██████████████████████████████████████");
+    }
+
+    /// <summary>
+    /// 🎯 CHANGEMENT 4: Coroutine to wait for NetworkVariable sync
+    /// Prevents race condition between ClientRpc and NetworkVariable update
+    /// </summary>
+    IEnumerator WaitForPowerCoreHealthSync()
+    {
+        if (powerCoreHealth == null) yield break;
+
+        // Wait 1 frame for NetworkVariable to sync
+        yield return null;
+
+        Debug.Log($"▼▼▼ PowerCore health synced, updating display ▼▼▼");
+
+        // Now update the display with synced values
+        UpdatePowerCoreDisplay();
+    }
+
     void UpdateHealthDisplay()
     {
         if (healthText == null || playerHealth == null)
             return;
-        
+
         float currentHealth = playerHealth.CurrentHealth;
         float maxHealth = playerHealth.MaxHealth;
-        
-        // Wait for NetworkVariable to sync
+
         if (maxHealth <= 0) return;
-        if (currentHealth == 0 && maxHealth > 0)
-        {
-            currentHealth = maxHealth;
-        }
-        
+
         float healthPercent = currentHealth / maxHealth;
-        
-        // Update text
+
         if (showHealthPercentage)
         {
             healthText.text = $"Health: {Mathf.CeilToInt(healthPercent * 100)}%";
@@ -319,165 +275,140 @@ public class PlayerHUDDynamic : MonoBehaviour
         {
             healthText.text = $"Health: {Mathf.CeilToInt(currentHealth)} / {Mathf.CeilToInt(maxHealth)}";
         }
-        
-        // Update color
+
         healthText.color = healthPercent <= lowHealthThreshold ? lowHealthColor : normalHealthColor;
     }
-    
+
     void UpdateAmmoDisplay()
     {
         if (ammoText == null || reservesText == null || weaponController == null)
             return;
-        
+
         int currentAmmo = weaponController.CurrentAmmo;
         int maxAmmo = weaponController.MaxAmmo;
         int reserves = weaponController.ReserveAmmo;
-        
-        // Update text
+
         ammoText.text = $"{currentAmmo}";
         reservesText.text = $"/ {reserves}";
-        
-        // Update color
+
         float ammoPercent = maxAmmo > 0 ? (float)currentAmmo / maxAmmo : 0f;
         Color ammoColor = ammoPercent <= lowAmmoThreshold ? lowAmmoColor : normalAmmoColor;
         ammoText.color = ammoColor;
         reservesText.color = ammoColor;
     }
-    
+
     void UpdatePowerCoreDisplay()
     {
         if (powerCoreText == null || powerCoreHealth == null)
             return;
-        
+
         float currentHealth = powerCoreHealth.CurrentHealth;
         float maxHealth = powerCoreHealth.MaxHealth;
-        
-        // Don't show anything until we have valid data
+
         if (maxHealth <= 0 && !powerCoreDestroyed)
         {
             powerCoreText.text = "Core: Syncing...";
             powerCoreText.color = Color.gray;
             return;
         }
-        
-        // Track if health actually changed (to detect real updates)
-        if (currentHealth != powerCoreLastHealth)
-        {
-            powerCoreLastHealth = currentHealth;
-            powerCoreNetworkReady = true;
-        }
-        
+
         float healthPercent = currentHealth / maxHealth;
-        
+
         // Update text
         powerCoreText.text = $"Core: {Mathf.CeilToInt(currentHealth)} / {Mathf.CeilToInt(maxHealth)}";
-        
-        // Update color based on health percentage
+
+        // Update color
         if (healthPercent <= criticalPowerCoreThreshold)
         {
-            powerCoreText.color = criticalPowerCoreColor; // Red when critical
+            powerCoreText.color = criticalPowerCoreColor;
         }
         else if (healthPercent <= warningPowerCoreThreshold)
         {
-            powerCoreText.color = warningPowerCoreColor; // Orange when warning
+            powerCoreText.color = warningPowerCoreColor;
         }
         else
         {
-            powerCoreText.color = normalPowerCoreColor; // Cyan when healthy
+            powerCoreText.color = normalPowerCoreColor;
         }
     }
-    
-    /// <summary>
-    /// Check if PowerCore is destroyed and show game over
-    /// </summary>
+
     void CheckPowerCoreDestroyed()
     {
-        if (powerCoreHealth == null || powerCoreDestroyed || !powerCoreNetworkReady)
+        if (powerCoreHealth == null || powerCoreDestroyed)
             return;
-        
-        // Check if PowerCore health is 0 or below
+
         if (powerCoreHealth.CurrentHealth <= 0 && powerCoreHealth.MaxHealth > 0)
         {
             powerCoreDestroyed = true;
             ShowGameOver();
         }
     }
-    
-    /// <summary>
-    /// Shows the game over UI
-    /// </summary>
+
     void ShowGameOver()
     {
         Debug.Log("HUD: Showing GAME OVER screen");
-        
-        // Update PowerCore text to show destroyed
+
         if (powerCoreText != null)
         {
             powerCoreText.text = "CORE DESTROYED";
             powerCoreText.color = Color.red;
         }
-        
-        // Show game over panel if available
+
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(true);
         }
-        
-        // Show game over text if available
+
         if (gameOverText != null)
         {
             gameOverText.text = "GAME OVER\n\nPower Core Destroyed";
             gameOverText.color = Color.red;
         }
-        
-        // Unlock cursor so player can click restart/quit buttons
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
-    
-    /// <summary>
-    /// Public method to manually reconnect to a new player
-    /// Call this if the player respawns
-    /// </summary>
+
+    void OnDestroy()
+    {
+        // 🎯 CHANGEMENT 5: Unsubscribe from events
+        if (powerCoreHealth != null)
+        {
+            powerCoreHealth.OnDamaged.RemoveListener(OnPowerCoreDamaged);
+        }
+    }
+
     public void Reconnect()
     {
         isConnectedToPlayer = false;
-        hasStartedSearching = false;
         playerHealth = null;
         weaponController = null;
-        
+
         if (showDebugLogs)
             Debug.Log("HUD: Reconnecting to player...");
-        
+
         StartCoroutine(FindLocalPlayer());
     }
-    
-    /// <summary>
-    /// Public method to reconnect to PowerCore
-    /// Call this if the PowerCore is destroyed and respawned (new round)
-    /// </summary>
+
     public void ReconnectPowerCore()
     {
+        // 🎯 CHANGEMENT 6: Unsubscribe before reconnecting
+        if (powerCoreHealth != null)
+        {
+            powerCoreHealth.OnDamaged.RemoveListener(OnPowerCoreDamaged);
+        }
+
         isConnectedToPowerCore = false;
         powerCoreHealth = null;
         powerCoreNetworkObject = null;
         powerCoreDestroyed = false;
-        powerCoreNetworkReady = false;
-        powerCoreLastHealth = -1f;
-        
+
         if (showDebugLogs)
             Debug.Log("HUD: Reconnecting to PowerCore...");
-        
+
         StartCoroutine(FindPowerCore());
     }
-    
-    /// <summary>
-    /// Check if HUD is connected to player
-    /// </summary>
+
     public bool IsConnectedToPlayer => isConnectedToPlayer;
-    
-    /// <summary>
-    /// Check if HUD is connected to PowerCore
-    /// </summary>
     public bool IsConnectedToPowerCore => isConnectedToPowerCore;
 }

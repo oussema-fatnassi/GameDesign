@@ -36,7 +36,6 @@ public class LobbyManagerUI : NetworkBehaviour
 
         _startButton.onClick.AddListener(() =>
         {
-            GameManager.Instance.IsStarted = true;
             HideLobbyUIClientRpc();
         });
     }
@@ -56,6 +55,7 @@ public class LobbyManagerUI : NetworkBehaviour
     public void HideLobbyUIClientRpc()
     {
         this.gameObject.SetActive(false);
+        GameManager.Instance.IsStarted = true;
         Cursor.lockState = CursorLockMode.Locked;
         _crosshair.SetActive(true);
         _UIContainer.SetActive(true);

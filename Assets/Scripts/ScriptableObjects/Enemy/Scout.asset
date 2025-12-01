@@ -15,7 +15,7 @@ MonoBehaviour:
   enemyName: Scout
   description: Basic melee enemy
   maxHealth: 50
-  moveSpeed: 3
+  moveSpeed: 10
   attackRange: 2
   objectiveAttackRange: 3
   attackDamage: 10

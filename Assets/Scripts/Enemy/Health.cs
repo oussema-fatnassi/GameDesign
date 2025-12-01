@@ -1,9 +1,11 @@
-using Unity.Netcode;
+﻿using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
 /// <summary>
 /// Health component for players, enemies, and destructible objects
+/// Handles networked health with proper server authority
+/// FIXED: Proper despawn handling for networked objects
 /// </summary>
 public class Health : NetworkBehaviour
 {
@@ -29,14 +31,24 @@ public class Health : NetworkBehaviour
     {
         base.OnNetworkSpawn();
 
+        Debug.Log($"═══ [Health-{gameObject.name}] OnNetworkSpawn ═══");
+        Debug.Log($"  IsServer: {IsServer}");
+        Debug.Log($"  IsClient: {IsClient}");
+        Debug.Log($"  IsSpawned: {IsSpawned}");
+        Debug.Log($"  NetworkObjectId: {NetworkObjectId}");
+
         // Initialize health on server
         if (IsServer)
         {
             _currentHealth.Value = _maxHealth;
+            Debug.Log($"  [SERVER] Set _currentHealth.Value = {_maxHealth}");
         }
 
         // Subscribe to health changes on all clients
         _currentHealth.OnValueChanged += OnHealthChanged;
+
+        Debug.Log($"  _currentHealth.Value RIGHT NOW = {_currentHealth.Value}");
+        Debug.Log($"═══════════════════════════════════");
     }
 
     public override void OnNetworkDespawn()
@@ -50,6 +62,8 @@ public class Health : NetworkBehaviour
     /// </summary>
     private void OnHealthChanged(float previousValue, float newValue)
     {
+        Debug.Log($"►►► [{(IsServer ? "SERVER" : "CLIENT")}] {gameObject.name} OnHealthChanged: {previousValue} -> {newValue}");
+
         if (showDebugLogs)
         {
             Debug.Log($"{gameObject.name} health changed: {previousValue} -> {newValue}");
@@ -69,10 +83,18 @@ public class Health : NetworkBehaviour
     [Rpc(SendTo.Server)]
     public void TakeDamageServerRpc(float damage)
     {
+        Debug.Log($"►►► TakeDamageServerRpc called on {gameObject.name}");
+        Debug.Log($"    IsServer: {IsServer}");
+        Debug.Log($"    _isDead: {_isDead}");
+        Debug.Log($"    damage: {damage}");
+
         if (_isDead || !IsServer)
             return;
 
+        float oldValue = _currentHealth.Value;
         _currentHealth.Value -= damage;
+
+        Debug.Log($"►►► [SERVER] {gameObject.name} Health changed: {oldValue} -> {_currentHealth.Value}");
 
         if (showDebugLogs)
         {
@@ -83,6 +105,7 @@ public class Health : NetworkBehaviour
         OnDamaged?.Invoke(damage);
 
         // Notify all clients about damage taken
+        Debug.Log($"►►► [SERVER] Calling NotifyDamageTakenClientRpc({damage})");
         NotifyDamageTakenClientRpc(damage);
     }
 
@@ -92,6 +115,11 @@ public class Health : NetworkBehaviour
     /// </summary>
     public void TakeDamage(float damage)
     {
+        Debug.Log($"►►► TakeDamage called on {gameObject.name}");
+        Debug.Log($"    IsServer: {IsServer}");
+        Debug.Log($"    _isDead: {_isDead}");
+        Debug.Log($"    damage: {damage}");
+
         if (!IsServer)
         {
             Debug.LogWarning($"TakeDamage called on client for {gameObject.name}! Use TakeDamageServerRpc instead.");
@@ -101,7 +129,10 @@ public class Health : NetworkBehaviour
         if (_isDead)
             return;
 
+        float oldValue = _currentHealth.Value;
         _currentHealth.Value -= damage;
+
+        Debug.Log($"►►► [SERVER] {gameObject.name} Health changed: {oldValue} -> {_currentHealth.Value}");
 
         if (showDebugLogs)
         {
@@ -112,6 +143,7 @@ public class Health : NetworkBehaviour
         OnDamaged?.Invoke(damage);
 
         // Notify all clients
+        Debug.Log($"►►► [SERVER] Calling NotifyDamageTakenClientRpc({damage})");
         NotifyDamageTakenClientRpc(damage);
     }
 
@@ -122,14 +154,16 @@ public class Health : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     private void NotifyDamageTakenClientRpc(float damage)
     {
+        Debug.Log($"►►► [{(IsServer ? "SERVER" : "CLIENT")}] NotifyDamageTakenClientRpc received: damage={damage}");
+        Debug.Log($"    Current _currentHealth.Value = {_currentHealth.Value}");
+
         // This runs on all clients
         // OnDamaged event is already invoked on server, so only invoke on clients
         if (!IsServer)
         {
+            Debug.Log($"►►► [CLIENT] Invoking OnDamaged event with {damage}");
             OnDamaged?.Invoke(damage);
         }
-
-        // Add visual/audio feedback here if needed
     }
 
     /// <summary>
@@ -159,6 +193,7 @@ public class Health : NetworkBehaviour
 
     /// <summary>
     /// Handles death (runs on all clients via OnHealthChanged callback)
+    /// 🎯 FIXED: Proper networked despawn - only server despawns, clients receive sync
     /// </summary>
     void Die()
     {
@@ -175,16 +210,59 @@ public class Health : NetworkBehaviour
         // Trigger death event (runs on all clients)
         OnDeath?.Invoke();
 
-        // Only server handles destruction
-        if (IsServer)
+        // 🎯 CRITICAL FIX: Only server handles destruction of networked objects
+        if (IsServer && NetworkObject != null)
         {
-            // Delay destruction to allow death animations/effects
-            Destroy(gameObject, 2f);
+            // NetworkObject.Despawn with destroy=true will:
+            // 1. Despawn the object on the server
+            // 2. Automatically notify all clients to despawn
+            // 3. Destroy the GameObject on all machines
+            Debug.Log($"[SERVER] Despawning networked object: {gameObject.name}");
+
+            // Delay slightly to allow death effects/animations
+            StartCoroutine(DespawnAfterDelay(0f));
+        }
+        else if (IsServer && NetworkObject == null)
+        {
+            // Non-networked object (rare case)
+            Debug.Log($"[SERVER] Destroying non-networked object: {gameObject.name}");
+            Destroy(gameObject, 0f);
+        }
+        else
+        {
+           
+            //Destroy(gameObject, 0f);
+        }
+        // 🎯 IMPORTANT: Clients do NOTHING here
+        // They will receive the despawn command from the server automatically
+    }
+
+    /// <summary>
+    /// Coroutine to despawn after a delay (for death animations)
+    /// </summary>
+    private System.Collections.IEnumerator DespawnAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (NetworkObject != null && NetworkObject.IsSpawned)
+        {
+            // destroy=true ensures the GameObject is destroyed on all clients
+            NetworkObject.Despawn(destroy: true);
+            Debug.Log($"[SERVER] {gameObject.name} despawned and destroyed");
         }
     }
 
     // Public getters
-    public float CurrentHealth => _currentHealth.Value;
+    public float CurrentHealth
+    {
+        get
+        {
+            float val = _currentHealth.Value;
+            Debug.Log($"►►► CurrentHealth getter called on {gameObject.name}: returning {val}");
+            return val;
+        }
+    }
+
     public float MaxHealth => _maxHealth;
     public float HealthPercentage => _currentHealth.Value / _maxHealth;
     public bool IsDead => _isDead;

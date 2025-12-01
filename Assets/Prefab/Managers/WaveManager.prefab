@@ -51,7 +51,9 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  waves: []
+  waves:
+  - {fileID: 11400000, guid: 4749ebfc589d53448b1150a62963f013, type: 2}
+  - {fileID: 11400000, guid: 52a142485f434204eb51cb44078b9c99, type: 2}
   timeBetweenWaves: 10
   useTestMode: 1
   testWave: {fileID: 11400000, guid: c02c88ef14a82e84490015f854d5f23f, type: 2}

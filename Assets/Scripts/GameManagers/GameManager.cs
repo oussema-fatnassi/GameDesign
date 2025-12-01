@@ -7,11 +7,15 @@ public class GameManager : MonoBehaviour
     #region Fields
     [Header("Wave System")]
     [SerializeField] private WaveManager waveManager; // Référence au WaveManager
+    [SerializeField] private GameObject _loseScreen;
+    [SerializeField] private GameObject _winScreen;
 
     private EClientType _clientType = EClientType.NONE;
     private bool _isGamePaused = false;
     private bool _isStarted = false;
     private bool _isGameOver = false;
+
+
 
     public event Action<bool> _isGameStartedEvent;
     #endregion
@@ -118,6 +122,7 @@ public class GameManager : MonoBehaviour
 
         // Show victory screen, etc.
         // TODO: Implement victory UI
+        _winScreen.SetActive(true);
     }
 
     /// <summary>
@@ -130,5 +135,6 @@ public class GameManager : MonoBehaviour
 
         // Show defeat screen, etc.
         // TODO: Implement defeat UI
+        _loseScreen.SetActive(true);
     }
 }

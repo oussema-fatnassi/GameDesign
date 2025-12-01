@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
+using System;
 
 /// <summary>
 /// Handles weapon shooting mechanics with raycast hit detection
@@ -21,9 +22,6 @@ public class WeaponController : MonoBehaviour
     [SerializeField] private LineRenderer bulletTracerPrefab;
     [SerializeField] private float tracerDuration = 0.05f;
     
-    [Header("UI")]
-    [SerializeField] private Crosshair crosshair;
-    
     [Header("Shooting Settings")]
     [SerializeField] private LayerMask hitLayers = -1; // What can be hit
     [SerializeField] private bool showDebugRays = true;
@@ -43,7 +41,8 @@ public class WeaponController : MonoBehaviour
     
     // State
     private bool canShoot = true;
-    
+
+    public static event Action OnHit;
     void Awake()
     {
         // Initialize input
@@ -179,10 +178,7 @@ public class WeaponController : MonoBehaviour
             HandleHit(hit);
             
             // Show crosshair hit feedback
-            if (crosshair != null)
-            {
-                crosshair.ShowHitFeedback();
-            }
+            OnHit?.Invoke();
         }
         
         // Show bullet tracer
@@ -234,9 +230,9 @@ public class WeaponController : MonoBehaviour
         float spread = weaponConfig.Spread;
         
         Vector3 randomSpread = new Vector3(
-            Random.Range(-spread, spread),
-            Random.Range(-spread, spread),
-            Random.Range(-spread, spread)
+            UnityEngine.Random.Range(-spread, spread),
+            UnityEngine.Random.Range(-spread, spread),
+            UnityEngine.Random.Range(-spread, spread)
         );
         
         return (direction + randomSpread).normalized;

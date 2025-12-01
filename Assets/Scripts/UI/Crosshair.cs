@@ -39,7 +39,17 @@ public class Crosshair : MonoBehaviour
             rect.sizeDelta = new Vector2(size, size);
         }
     }
-    
+
+    private void OnEnable()
+    {
+        WeaponController.OnHit += ShowHitFeedback;
+    }
+
+    private void OnDisable()
+    {
+        WeaponController.OnHit -= ShowHitFeedback;
+    }
+
     void Update()
     {
         // Reset color after hit feedback

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77777983b85d940129f5b31994129c82, type: 3}
   m_Name: PlayerConfig
   m_EditorClassIdentifier: 
-  speed: 5
+  speed: 10
   jumpForce: 5
-  horizontalSensitivity: 1
-  verticalSensitivity: 1
+  horizontalSensitivity: 20
+  verticalSensitivity: 20
   verticalLookClamp: 80
   groundCheckDistance: 0.2

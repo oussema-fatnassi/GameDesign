@@ -1,5 +1,6 @@
 ﻿using Unity.Netcode;
 using UnityEngine;
+using System;
 
 public class GameManager : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class GameManager : MonoBehaviour
     private bool _isGamePaused = false;
     private bool _isStarted = false;
     private bool _isGameOver = false;
+
+    public event Action<bool> _isGameStartedEvent;
     #endregion
 
     #region Properties
@@ -74,6 +77,7 @@ public class GameManager : MonoBehaviour
     private void StartGame()
     {
         Debug.Log("Client Called StartGame: " + _clientType);
+        _isGameStartedEvent?.Invoke(true);
 
         if (_clientType == EClientType.HOST)
         {

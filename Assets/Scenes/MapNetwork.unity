@@ -915,6 +915,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 177464254}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &178819707 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4767664288094459550, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+  m_PrefabInstance: {fileID: 1662055610}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &190968746
 GameObject:
   m_ObjectHideFlags: 0
@@ -1455,6 +1460,17 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 228179335}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &243146528 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5517943430957779793, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+  m_PrefabInstance: {fileID: 1662055610}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &257920636
 GameObject:
   m_ObjectHideFlags: 0
@@ -2071,6 +2087,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1004289675}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &368370227 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1933012152813034228, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+  m_PrefabInstance: {fileID: 1662055610}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -6834,6 +6855,17 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1444655242}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1456542659 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6172256480039686823, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+  m_PrefabInstance: {fileID: 1662055610}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1484933445
 GameObject:
   m_ObjectHideFlags: 0
@@ -7814,6 +7846,10 @@ PrefabInstance:
       propertyPath: powerCoreText
       value: 
       objectReference: {fileID: 344143332}
+    - target: {fileID: 4767664288094459550, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7222767523517705853, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
       propertyPath: m_text
       value: Core :100 / 100
@@ -7862,10 +7898,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.x
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4394036444775135930, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7950376883443941405, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1937723749}
   m_SourcePrefab: {fileID: 100100000, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
 --- !u!1001 &1685963895
 PrefabInstance:
@@ -8291,6 +8331,17 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1710417521}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1717001808 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4663662071855341745, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+  m_PrefabInstance: {fileID: 1662055610}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1718663593
 GameObject:
   m_ObjectHideFlags: 0
@@ -10064,6 +10115,44 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1924243514}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1937723744 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7950376883443941405, guid: f5aa53b0bcbc8dd4980d813a920b3423, type: 3}
+  m_PrefabInstance: {fileID: 1662055610}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1937723749
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937723744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2c58c5141d67480fa8bc49db507fb10, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  healthText: {fileID: 1456542659}
+  ammoText: {fileID: 243146528}
+  reservesText: {fileID: 1717001808}
+  powerCoreText: {fileID: 344143332}
+  gameOverPanel: {fileID: 0}
+  gameOverText: {fileID: 0}
+  showHealthPercentage: 0
+  lowHealthColor: {r: 1, g: 0, b: 0, a: 1}
+  normalHealthColor: {r: 1, g: 1, b: 1, a: 1}
+  lowHealthThreshold: 0.3
+  lowAmmoColor: {r: 1, g: 0.5, b: 0, a: 1}
+  normalAmmoColor: {r: 1, g: 1, b: 1, a: 1}
+  lowAmmoThreshold: 0.25
+  criticalPowerCoreColor: {r: 1, g: 0, b: 0, a: 1}
+  warningPowerCoreColor: {r: 1, g: 0.6, b: 0, a: 1}
+  normalPowerCoreColor: {r: 0, g: 1, b: 1, a: 1}
+  criticalPowerCoreThreshold: 0.25
+  warningPowerCoreThreshold: 0.5
+  showDebugLogs: 1
+  UIContainer: {fileID: 178819707}
+  crosshairObject: {fileID: 368370227}
 --- !u!1 &1948065003
 GameObject:
   m_ObjectHideFlags: 0

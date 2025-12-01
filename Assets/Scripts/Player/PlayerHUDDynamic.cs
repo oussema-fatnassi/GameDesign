@@ -37,6 +37,8 @@ public class PlayerHUDDynamic : MonoBehaviour
     
     [Header("Debug")]
     [SerializeField] private bool showDebugLogs = true;
+    [SerializeField] private GameObject UIContainer;
+    [SerializeField] private GameObject crosshairObject;
     
     // Dynamic references
     private Health playerHealth;
@@ -52,6 +54,18 @@ public class PlayerHUDDynamic : MonoBehaviour
     // Network sync tracking
     private bool powerCoreNetworkReady = false;
     private float powerCoreLastHealth = -1f; // Track last known health
+
+    void Start()
+    {
+        if (UIContainer != null)
+        {
+            UIContainer.SetActive(false);
+        }
+        if (crosshairObject != null)
+        {
+            crosshairObject.SetActive(false);
+        }
+    }
     
     void Update()
     {
@@ -62,6 +76,18 @@ public class PlayerHUDDynamic : MonoBehaviour
             
             if (showDebugLogs)
                 Debug.Log("HUD: Game started (IsStarted = true), beginning search...");
+
+            if (UIContainer != null)
+            {
+                UIContainer.SetActive(true);
+            }
+            if (crosshairObject != null)
+            {
+                crosshairObject.SetActive(true);
+            }
+
+            // Subscribe to the event for any future updates (optional but good practice)
+            GameManager.Instance._isGameStartedEvent += OnGameStarted;
             
             StartCoroutine(FindLocalPlayer());
             StartCoroutine(FindPowerCore());
@@ -78,6 +104,19 @@ public class PlayerHUDDynamic : MonoBehaviour
         {
             UpdatePowerCoreDisplay();
             CheckPowerCoreDestroyed();
+        }
+    }
+
+    void OnGameStarted(bool isStarted)
+    {
+        if (isStarted)
+        {
+            if (UIContainer != null)
+            {
+                UIContainer.SetActive(true);
+            }
+            if (crosshairObject != null)
+            { crosshairObject.SetActive(true);}
         }
     }
     

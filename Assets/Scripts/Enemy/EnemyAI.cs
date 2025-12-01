@@ -44,7 +44,7 @@ public class EnemyAI : NetworkBehaviour
         health.OnDeath.AddListener(OnDeath);
     }
     
-    void Start()
+    public override void OnNetworkSpawn()
     {
         if (!IsServer)
         {

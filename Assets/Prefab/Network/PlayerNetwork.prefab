@@ -160,6 +160,7 @@ GameObject:
   - component: {fileID: 836427243433382908}
   - component: {fileID: 2099299426625555833}
   - component: {fileID: 4346216031612199444}
+  - component: {fileID: 2338734754117401196}
   m_Layer: 0
   m_Name: PlayerNetwork
   m_TagString: Player
@@ -421,6 +422,27 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   showDebugRays: 1
+--- !u!114 &2338734754117401196
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5241396416684125799}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b844b2b6cba34c6eb0bfcb0c5811b02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  _maxHealth: 100
+  OnDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDamaged:
+    m_PersistentCalls:
+      m_Calls: []
+  showDebugLogs: 1
 --- !u!1 &5509956159582417037
 GameObject:
   m_ObjectHideFlags: 0

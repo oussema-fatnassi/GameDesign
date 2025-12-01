@@ -306,6 +306,8 @@ public class WeaponController : MonoBehaviour
     public int ReserveAmmo => reserveAmmo;
     public bool IsReloading => isReloading;
     public WeaponConfig Config => weaponConfig;
+    public int MaxAmmo => weaponConfig != null ? weaponConfig.MagazineSize : 0;
+
     
     // Debug visualization
     void OnDrawGizmos()

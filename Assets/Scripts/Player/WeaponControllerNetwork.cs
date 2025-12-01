@@ -312,6 +312,8 @@ public class WeaponControllerNetwork : NetworkBehaviour
     public bool IsReloading => isReloading;
     public WeaponConfig Config => weaponConfig;
 
+    public int MaxAmmo => weaponConfig != null ? weaponConfig.MagazineSize : 0;
+
     void OnDrawGizmos()
     {
         if (!showDebugRays || playerCamera == null)
